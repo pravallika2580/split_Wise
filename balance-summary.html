@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balance Summary — Splitwise-ish</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <script src="js/constants.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>mountNav('balance');</script>
+
+  <main class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Balance Summary</h1>
+        <p class="page-sub">Net position of each member and the simplified list of payments to settle.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Per-Member Balances</h3>
+      <div id="balances"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Who Owes Whom</h3>
+      <div id="debts"></div>
+    </div>
+  </main>
+
+  <script src="js/balance.js"></script>
+</body>
+</html>

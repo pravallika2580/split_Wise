@@ -1,0 +1,92 @@
+/* ==== Tablet ==== */
+@media (max-width: 960px) {
+  .filter-row       { grid-template-columns: 1fr 1fr 1fr; }
+  .filter-row-6     { grid-template-columns: 1fr 1fr; }
+
+  .stat-hero .value { font-size: 2rem; }
+  .page-title       { font-size: 1.4rem; }
+}
+
+/* ==== Mobile ==== */
+@media (max-width: 720px) {
+  .topbar-inner {
+    padding: 0.75rem 1rem;
+  }
+  .nav-toggle { display: inline-flex; }
+
+  .nav-menu {
+    order: 3;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+  .nav-menu.open { max-height: 500px; margin-top: 0.5rem; }
+  .nav-menu ul {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    padding: 0.25rem 0;
+  }
+  .nav-menu a { justify-content: flex-start; }
+
+  main.page { padding: 0 1rem; margin: 1.25rem auto; }
+
+  .form-grid { grid-template-columns: 1fr; }
+
+  .filter-row, .filter-row-6 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Card-style rows on narrow screens */
+  .data-table { min-width: unset; }
+  .data-table thead { display: none; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td {
+    display: block;
+    width: 100%;
+  }
+  .data-table tr {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 0.9rem;
+    text-align: right;
+  }
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--muted);
+    margin-right: 0.75rem;
+    text-align: left;
+  }
+  .data-table td:last-child { border-bottom: none; }
+  .actions-cell { justify-content: flex-end; }
+
+  .debt-list li {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "from arrow"
+      "to   amount";
+    row-gap: 0.25rem;
+  }
+  .debt-from   { grid-area: from;   text-align: left; }
+  .debt-to     { grid-area: to;     text-align: left; }
+  .debt-amount { grid-area: amount; }
+  .arrow       { grid-area: arrow;  justify-self: end; }
+
+  .expense-meta { gap: 0.75rem 1.25rem; }
+
+  .overall-total { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .stat-hero     { flex-direction: column; align-items: flex-start; }
+
+  .chart-panel { height: 320px; }
+}

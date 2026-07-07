@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split Calculation — Splitwise-ish</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <script src="js/constants.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>mountNav('split');</script>
+
+  <main class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Split Calculation</h1>
+        <p class="page-sub">Expenses grouped by category. Expand a card to see who owes whom.</p>
+      </div>
+    </div>
+
+    <div id="split-wrap"></div>
+
+    <div class="overall-total">
+      <span>Overall Group Expense</span>
+      <strong id="overall-total">₹0</strong>
+    </div>
+  </main>
+
+  <script src="js/split.js"></script>
+</body>
+</html>
