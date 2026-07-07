@@ -23,12 +23,12 @@ const renderSplitPage = (wrap, totalEl, expenses) => {
   // Iterate CATEGORIES (not Object.keys) so cards render in the canonical
   // display order regardless of insertion order.
   let overall = 0;
-  const html = CATEGORIES.map(cat => {
-    const list = grouped[cat.name];
+  const html = CATEGORIES.map(category => {
+    const list = grouped[category.name];
     if (!list || list.length === 0) return '';
-    const catTotal = list.reduce((s, e) => s + Number(e.amount), 0);
+    const catTotal = list.reduce((totalAmount, expense) => totalAmount + Number(expense.amount), 0);
     overall += catTotal;
-    return categoryCard(cat, list, catTotal);
+    return categoryCard(category, list, catTotal);
   }).join('');
 
   wrap.innerHTML = html || `<div class="panel"><p class="empty">${MESSAGES.emptyNoMatch}</p></div>`;
@@ -37,49 +37,49 @@ const renderSplitPage = (wrap, totalEl, expenses) => {
 
 const groupByCategory = (expenses) => {
   const grouped = {};
-  expenses.forEach(e => {
-    (grouped[e.category] ||= []).push(e);
+  expenses.forEach(expense => {
+    (grouped[expense.category] ||= []).push(expense);
   });
   return grouped;
 };
 
-const categoryCard = (cat, list, catTotal) => `
-  <details class="category-card" open style="--cat-color:${cat.color}">
+const categoryCard = (category, list, catTotal) => `
+  <details class="category-card" open style="--cat-color:${category.color}">
     <summary>
       <span class="cat-title">
-        <span class="cat-icon" style="background:${cat.color}22">${cat.icon}</span>
-        ${cat.name}
+        <span class="cat-icon" style="background:${category.color}22">${category.icon}</span>
+        ${category.name}
         <span class="count">(${list.length})</span>
       </span>
       <span class="cat-total">${formatMoney(catTotal)}</span>
     </summary>
     <div class="category-body">
-      ${list.map(e => expenseCard(cat, e)).join('')}
-      <div class="cat-total-row">${cat.name} Total <strong>${formatMoney(catTotal)}</strong></div>
+      ${list.map(expense => expenseCard(category, expense)).join('')}
+      <div class="cat-total-row">${category.name} Total <strong>${formatMoney(catTotal)}</strong></div>
     </div>
   </details>
 `;
 
-const expenseCard = (cat, e) => {
-  const share = Number(e.amount) / e.sharedBy.length;
-  const debts = e.sharedBy
-    .filter(m => m !== e.paidBy)
-    .map(m => `<li><strong>${escapeHtml(m)}</strong> → <strong>${escapeHtml(e.paidBy)}</strong> : <span class="pay-amt">${formatMoney(share)}</span></li>`)
+const expenseCard = (category, expense) => {
+  const share = Number(expense.amount) / expense.sharedBy.length;
+  const debts = expense.sharedBy
+    .filter(member => member !== expense.paidBy)
+    .map(member => `<li><strong>${escapeHtml(member)}</strong> → <strong>${escapeHtml(expense.paidBy)}</strong> : <span class="pay-amt">${formatMoney(share)}</span></li>`)
     .join('');
 
   return `
-    <article class="expense-card" style="border-left-color:${cat.color}">
-      <h4>${escapeHtml(e.name)}</h4>
+    <article class="expense-card" style="border-left-color:${category.color}">
+      <h4>${escapeHtml(expense.name)}</h4>
       <dl class="expense-meta">
-        <div><dt>Amount</dt><dd>${formatMoney(e.amount)}</dd></div>
-        <div><dt>Paid By</dt><dd>${escapeHtml(e.paidBy)}</dd></div>
-        <div><dt>Date</dt><dd>${formatDate(e.date)}</dd></div>
+        <div><dt>Amount</dt><dd>${formatMoney(expense.amount)}</dd></div>
+        <div><dt>Paid By</dt><dd>${escapeHtml(expense.paidBy)}</dd></div>
+        <div><dt>Date</dt><dd>${formatDate(expense.date)}</dd></div>
       </dl>
       <div class="members-row">
         <span class="label">Members:</span>
-        ${e.sharedBy.map(m => `<span class="chip">${escapeHtml(m)}</span>`).join('')}
+        ${expense.sharedBy.map(member => `<span class="chip">${escapeHtml(member)}</span>`).join('')}
       </div>
-      <div class="share-box" style="background:${cat.color}15;color:${cat.color}">
+      <div class="share-box" style="background:${category.color}15;color:${category.color}">
         <span>Share Per Person</span>
         <strong>${formatMoney(share)}</strong>
       </div>
@@ -88,7 +88,7 @@ const expenseCard = (cat, e) => {
           <h5>Who Owes Whom</h5>
           <ul>${debts}</ul>
         </div>
-      ` : `<p class="muted small">${escapeHtml(e.paidBy)} covered their own share — nobody owes anyone.</p>`}
+      ` : `<p class="muted small">${escapeHtml(expense.paidBy)} covered their own share — nobody owes anyone.</p>`}
     </article>
   `;
 };

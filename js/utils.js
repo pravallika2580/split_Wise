@@ -4,14 +4,14 @@
 // Look up the full category record by name.  Falls back to the last entry
 // (Others) if a category is missing so the UI never crashes on stray data.
 const getCategoryInfo  = (name) =>
-  CATEGORIES.find(c => c.name === name) || CATEGORIES[CATEGORIES.length - 1];
+  CATEGORIES.find(category => category.name === name) || CATEGORIES[CATEGORIES.length - 1];
 
 const getCategoryIcon  = (name) => getCategoryInfo(name).icon;
 const getCategoryColor = (name) => getCategoryInfo(name).color;
 
 // Money formatter using Indian numbering ("1,00,000") with the rupee prefix.
-const formatMoney = (n) =>
-  '₹' + Number(n || 0).toLocaleString('en-IN', {
+const formatMoney = (amount) =>
+  '₹' + Number(amount || 0).toLocaleString('en-IN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2
   });
@@ -35,7 +35,7 @@ const todayISO = () => {
 
 // Escape user-supplied strings before dropping them into innerHTML to
 // prevent HTML/script injection from expense names or member labels.
-const escapeHtml = (s) => String(s ?? '')
+const escapeHtml = (value) => String(value ?? '')
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
   .replaceAll('>', '&gt;')

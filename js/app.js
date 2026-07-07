@@ -31,15 +31,15 @@ const mountNav = (active) => {
   toggle.addEventListener('click', () => menu.classList.toggle('open'));
 
   // Auto-close the mobile menu once the user follows a link.
-  menu.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => menu.classList.remove('open'));
+  menu.querySelectorAll('a').forEach(anchor => {
+    anchor.addEventListener('click', () => menu.classList.remove('open'));
   });
 };
 
 // Forward cross-tab localStorage changes into the in-page event so pages
 // only need to listen to one thing regardless of which tab did the write.
-window.addEventListener('storage', (e) => {
-  if (e.key === STORAGE_KEY) {
+window.addEventListener('storage', (event) => {
+  if (event.key === STORAGE_KEY) {
     window.dispatchEvent(new CustomEvent(EVENT_EXPENSES_UPDATED));
   }
 });

@@ -50,7 +50,7 @@ const initAddExpensePage = () => {
   });
   els.members.addEventListener('change', () => clearError('shared'));
 
-  form.addEventListener('submit', (e) => handleSubmit(e, els, editing));
+  form.addEventListener('submit', (event) => handleSubmit(event, els, editing));
 
   els.sampleBtn?.addEventListener('click', () => {
     showConfirmDialog(MESSAGES.confirmLoadSample, () => {
@@ -75,18 +75,18 @@ const initAddExpensePage = () => {
 
 // Fill Paid By, Category, and Members Shared from the constants.
 const populateFormOptions = ({ paidBy, category, members }) => {
-  MEMBERS.forEach(m => {
-    paidBy.insertAdjacentHTML('beforeend', `<option value="${m}">${m}</option>`);
+  MEMBERS.forEach(member => {
+    paidBy.insertAdjacentHTML('beforeend', `<option value="${member}">${member}</option>`);
     members.insertAdjacentHTML('beforeend', `
       <label class="checkbox-chip">
-        <input type="checkbox" name="shared" value="${m}"> ${m}
+        <input type="checkbox" name="shared" value="${member}"> ${member}
       </label>
     `);
   });
 
-  CATEGORIES.forEach(c => {
+  CATEGORIES.forEach(categoryOption => {
     category.insertAdjacentHTML('beforeend',
-      `<option value="${c.name}">${c.icon} ${c.name}</option>`);
+      `<option value="${categoryOption.name}">${categoryOption.icon} ${categoryOption.name}</option>`);
   });
 };
 
@@ -99,9 +99,9 @@ const enterEditMode = (els, expense) => {
   els.paidBy.value   = expense.paidBy;
   els.category.value = expense.category;
   els.date.value     = expense.date;
-  expense.sharedBy.forEach(m => {
-    const cb = els.members.querySelector(`input[value="${m}"]`);
-    if (cb) cb.checked = true;
+  expense.sharedBy.forEach(member => {
+    const checkbox = els.members.querySelector(`input[value="${member}"]`);
+    if (checkbox) checkbox.checked = true;
   });
   els.cancelBtn.classList.remove('is-hidden');
   els.sampleBtn.classList.add('is-hidden');
@@ -118,7 +118,7 @@ const handleSubmit = (event, els, editing) => {
     category: els.category.value,
     date:     els.date.value,
     sharedBy: [...document.querySelectorAll('input[name="shared"]:checked')]
-                .map(el => el.value)
+                .map(checkbox => checkbox.value)
   };
 
   if (!validateExpense(payload)) return;
@@ -165,14 +165,14 @@ const initDisplayExpensesPage = () => {
   };
 
   // Populate Category filter dropdown.
-  CATEGORIES.forEach(c => {
+  CATEGORIES.forEach(categoryOption => {
     els.catFilter.insertAdjacentHTML('beforeend',
-      `<option value="${c.name}">${c.icon} ${c.name}</option>`);
+      `<option value="${categoryOption.name}">${categoryOption.icon} ${categoryOption.name}</option>`);
   });
 
   // Populate the Sort dropdown from the constant.
   els.sort.innerHTML = SORT_OPTIONS
-    .map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    .map(option => `<option value="${option.value}">${option.label}</option>`).join('');
   els.sort.value = DEFAULT_SORT;
 
   const state = { q: '', cat: '', sort: DEFAULT_SORT };
@@ -192,11 +192,11 @@ const initDisplayExpensesPage = () => {
 
   // Wire delete via event delegation so a single listener survives every
   // re-render of the table body.
-  tableWrap.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-delete');
-    if (!btn) return;
+  tableWrap.addEventListener('click', (clickEvent) => {
+    const deleteButton = clickEvent.target.closest('.btn-delete');
+    if (!deleteButton) return;
     showConfirmDialog(MESSAGES.confirmDeleteExpense, () => {
-      deleteExpense(Number(btn.dataset.id));
+      deleteExpense(Number(deleteButton.dataset.id));
     });
   });
 
@@ -205,10 +205,14 @@ const initDisplayExpensesPage = () => {
 };
 
 // Apply search, category, and sort filters to a list of expenses.
-const applyFilters = (list, { q, cat, sort }) => {
+const applyFilters = (list, { q: searchQuery, cat: selectedCategory, sort }) => {
   let out = [...list];
-  if (q)   out = out.filter(e => (e.paidBy || '').toLowerCase().includes(q.toLowerCase()));
-  if (cat) out = out.filter(e => e.category === cat);
+  if (searchQuery) {
+    out = out.filter(expense => (expense.paidBy || '').toLowerCase().includes(searchQuery.toLowerCase()));
+  }
+  if (selectedCategory) {
+    out = out.filter(expense => expense.category === selectedCategory);
+  }
 
   const comparators = {
     'date-desc':   (a, b) => (b.date || '').localeCompare(a.date || ''),
@@ -244,25 +248,25 @@ const renderExpensesTable = (container, list) => {
   `;
 };
 
-const expenseRow = (e) => {
-  const share = Number(e.amount) / e.sharedBy.length;
-  const info = getCategoryInfo(e.category);
+const expenseRow = (expense) => {
+  const share = Number(expense.amount) / expense.sharedBy.length;
+  const info = getCategoryInfo(expense.category);
   return `
     <tr>
-      <td data-label="Expense">${escapeHtml(e.name)}</td>
-      <td data-label="Amount">${formatMoney(e.amount)}</td>
-      <td data-label="Paid By">${escapeHtml(e.paidBy)}</td>
+      <td data-label="Expense">${escapeHtml(expense.name)}</td>
+      <td data-label="Amount">${formatMoney(expense.amount)}</td>
+      <td data-label="Paid By">${escapeHtml(expense.paidBy)}</td>
       <td data-label="Category">
         <span class="tag" style="background:${info.color}22;color:${info.color}">
           ${info.icon} ${info.name}
         </span>
       </td>
-      <td data-label="Shared By">${e.sharedBy.map(escapeHtml).join(', ')}</td>
+      <td data-label="Shared By">${expense.sharedBy.map(escapeHtml).join(', ')}</td>
       <td data-label="Split">${formatMoney(share)} each</td>
-      <td data-label="Date">${formatDate(e.date)}</td>
+      <td data-label="Date">${formatDate(expense.date)}</td>
       <td data-label="Actions" class="actions-cell">
-        <a class="btn-sm btn-edit" href="add-expense.html?edit=${e.id}">Edit</a>
-        <button class="btn-sm btn-delete" data-id="${e.id}">Delete</button>
+        <a class="btn-sm btn-edit" href="add-expense.html?edit=${expense.id}">Edit</a>
+        <button class="btn-sm btn-delete" data-id="${expense.id}">Delete</button>
       </td>
     </tr>
   `;
@@ -285,17 +289,17 @@ const emptyMatch = () => `<p class="empty">${MESSAGES.emptyNoMatch}</p>`;
 
 // Show an inline error under a form field.
 const showError = (field, message) => {
-  const el = document.getElementById(`err-${field}`);
-  if (el) { el.textContent = message; el.hidden = false; }
+  const errorElement = document.getElementById(`err-${field}`);
+  if (errorElement) { errorElement.textContent = message; errorElement.hidden = false; }
 };
 
 const clearError = (field) => {
-  const el = document.getElementById(`err-${field}`);
-  if (el) { el.textContent = ''; el.hidden = true; }
+  const errorElement = document.getElementById(`err-${field}`);
+  if (errorElement) { errorElement.textContent = ''; errorElement.hidden = true; }
 };
 
 const clearAllErrors = () =>
-  document.querySelectorAll('.field-error').forEach(el => { el.textContent = ''; el.hidden = true; });
+  document.querySelectorAll('.field-error').forEach(errorElement => { errorElement.textContent = ''; errorElement.hidden = true; });
 
 // Create a reusable custom confirm dialog instead of the browser's default popup.
 const showConfirmDialog = (message, onConfirm) => {

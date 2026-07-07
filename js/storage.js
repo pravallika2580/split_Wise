@@ -18,7 +18,7 @@ const saveExpenses = (list) => {
   window.dispatchEvent(new CustomEvent(EVENT_EXPENSES_UPDATED));
 };
 
-const getExpenseById = (id) => loadExpenses().find(e => e.id === id) || null;
+const getExpenseById = (id) => loadExpenses().find(expense => expense.id === id) || null;
 
 const addExpense = (expense) => {
   const list = loadExpenses();
@@ -31,12 +31,12 @@ const addExpense = (expense) => {
 };
 
 const updateExpense = (id, updates) => {
-  const list = loadExpenses().map(e => e.id === id ? { ...e, ...updates } : e);
+  const list = loadExpenses().map(expense => expense.id === id ? { ...expense, ...updates } : expense);
   saveExpenses(list);
 };
 
 const deleteExpense = (id) => {
-  const list = loadExpenses().filter(e => e.id !== id);
+  const list = loadExpenses().filter(expense => expense.id !== id);
   saveExpenses(list);
 };
 
@@ -47,8 +47,8 @@ const clearAllExpenses = () => saveExpenses([]);
 const loadSampleData = () => {
   const today = todayISO();
   const list = loadExpenses();
-  SAMPLE_EXPENSES.forEach((s, i) => {
-    list.push({ id: Date.now() + i, ...s, date: today });
+  SAMPLE_EXPENSES.forEach((sampleExpense, index) => {
+    list.push({ id: Date.now() + index, ...sampleExpense, date: today });
   });
   saveExpenses(list);
 };

@@ -25,8 +25,8 @@ const initReportsPage = () => {
   const chartRefs = { pie: null, bar: null };
   const render = () => renderReports(els, chartRefs);
 
-  [els.catFilter, els.memberFilter, els.dateFrom, els.dateTo].forEach(el =>
-    el.addEventListener('change', render));
+  [els.catFilter, els.memberFilter, els.dateFrom, els.dateTo].forEach(inputElement =>
+    inputElement.addEventListener('change', render));
 
   els.resetBtn.addEventListener('click', () => {
     els.catFilter.value    = '';
@@ -41,31 +41,31 @@ const initReportsPage = () => {
 };
 
 const populateFilterOptions = ({ catFilter, memberFilter }) => {
-  CATEGORIES.forEach(c => {
+  CATEGORIES.forEach(categoryOption => {
     catFilter.insertAdjacentHTML('beforeend',
-      `<option value="${c.name}">${c.icon} ${c.name}</option>`);
+      `<option value="${categoryOption.name}">${categoryOption.icon} ${categoryOption.name}</option>`);
   });
-  MEMBERS.forEach(m => {
-    memberFilter.insertAdjacentHTML('beforeend', `<option value="${m}">${m}</option>`);
+  MEMBERS.forEach(member => {
+    memberFilter.insertAdjacentHTML('beforeend', `<option value="${member}">${member}</option>`);
   });
 };
 
 // Keep only expenses that match every active filter.
 const applyReportFilters = (list, { catFilter, memberFilter, dateFrom, dateTo }) =>
-  list.filter(e => {
-    if (catFilter.value && e.category !== catFilter.value) return false;
+  list.filter(expense => {
+    if (catFilter.value && expense.category !== catFilter.value) return false;
     // Member filter matches "involved in this expense" — either paid or shared.
-    if (memberFilter.value && !(e.paidBy === memberFilter.value
-                              || e.sharedBy.includes(memberFilter.value))) return false;
-    if (dateFrom.value && e.date < dateFrom.value) return false;
-    if (dateTo.value   && e.date > dateTo.value)   return false;
+    if (memberFilter.value && !(expense.paidBy === memberFilter.value
+                              || expense.sharedBy.includes(memberFilter.value))) return false;
+    if (dateFrom.value && expense.date < dateFrom.value) return false;
+    if (dateTo.value   && expense.date > dateTo.value)   return false;
     return true;
   });
 
 const renderReports = (els, chartRefs) => {
   const filtered = applyReportFilters(loadExpenses(), els);
 
-  els.total.textContent = formatMoney(filtered.reduce((s, e) => s + Number(e.amount), 0));
+  els.total.textContent = formatMoney(filtered.reduce((totalAmount, expense) => totalAmount + Number(expense.amount), 0));
 
   const catAgg    = aggregateByCategory(filtered);
   const memberAgg = aggregateByMember(filtered);
@@ -77,46 +77,46 @@ const renderReports = (els, chartRefs) => {
 };
 
 const aggregateByCategory = (list) => {
-  const agg = Object.fromEntries(CATEGORIES.map(c => [c.name, { total: 0, count: 0 }]));
-  list.forEach(e => {
-    if (!agg[e.category]) agg[e.category] = { total: 0, count: 0 };
-    agg[e.category].total += Number(e.amount);
-    agg[e.category].count += 1;
+  const agg = Object.fromEntries(CATEGORIES.map(category => [category.name, { total: 0, count: 0 }]));
+  list.forEach(expense => {
+    if (!agg[expense.category]) agg[expense.category] = { total: 0, count: 0 };
+    agg[expense.category].total += Number(expense.amount);
+    agg[expense.category].count += 1;
   });
   return agg;
 };
 
 const aggregateByMember = (list) => {
-  const agg = Object.fromEntries(MEMBERS.map(m => [m, { paid: 0, count: 0, share: 0 }]));
-  list.forEach(e => {
-    agg[e.paidBy].paid  += Number(e.amount);
-    agg[e.paidBy].count += 1;
-    const s = Number(e.amount) / e.sharedBy.length;
-    e.sharedBy.forEach(m => { agg[m].share += s; });
+  const agg = Object.fromEntries(MEMBERS.map(member => [member, { paid: 0, count: 0, share: 0 }]));
+  list.forEach(expense => {
+    agg[expense.paidBy].paid  += Number(expense.amount);
+    agg[expense.paidBy].count += 1;
+    const shareAmount = Number(expense.amount) / expense.sharedBy.length;
+    expense.sharedBy.forEach(member => { agg[member].share += shareAmount; });
   });
   return agg;
 };
 
-const categoryReportCard = (c, { total, count }) => `
-  <div class="report-card" style="--cat-color:${c.color}">
+const categoryReportCard = (category, { total, count }) => `
+  <div class="report-card" style="--cat-color:${category.color}">
     <div class="card-head">
-      <span class="cat-icon" style="background:${c.color}22">${c.icon}</span>
-      <span class="card-title">${c.name}</span>
+      <span class="cat-icon" style="background:${category.color}22">${category.icon}</span>
+      <span class="card-title">${category.name}</span>
     </div>
     <div class="stat-row"><span>Total Expense</span><strong>${formatMoney(total)}</strong></div>
     <div class="stat-row"><span>Number of Expenses</span><strong>${count}</strong></div>
   </div>
 `;
 
-const memberReportCard = (m, a) => `
+const memberReportCard = (member, stats) => `
   <div class="report-card member-card">
     <div class="card-head">
-      <span class="avatar">${m[0]}</span>
-      <span class="card-title">${m}</span>
+      <span class="avatar">${member[0]}</span>
+      <span class="card-title">${member}</span>
     </div>
-    <div class="stat-row"><span>Total Paid</span><strong>${formatMoney(a.paid)}</strong></div>
-    <div class="stat-row"><span>Expenses Paid</span><strong>${a.count}</strong></div>
-    <div class="stat-row"><span>Total Shared</span><strong>${formatMoney(a.share)}</strong></div>
+    <div class="stat-row"><span>Total Paid</span><strong>${formatMoney(stats.paid)}</strong></div>
+    <div class="stat-row"><span>Expenses Paid</span><strong>${stats.count}</strong></div>
+    <div class="stat-row"><span>Total Shared</span><strong>${formatMoney(stats.share)}</strong></div>
   </div>
 `;
 
@@ -124,9 +124,9 @@ const renderCharts = ({ pieCanvas, barCanvas }, catAgg, memberAgg, chartRefs) =>
   // Skip charts entirely when Chart.js isn't loaded (CDN unreachable / offline).
   if (typeof Chart === 'undefined') return;
 
-  const catLabels = CATEGORIES.map(c => c.name);
-  const catData   = CATEGORIES.map(c => catAgg[c.name].total);
-  const catColors = CATEGORIES.map(c => c.color);
+  const catLabels = CATEGORIES.map(category => category.name);
+  const catData   = CATEGORIES.map(category => catAgg[category.name].total);
+  const catColors = CATEGORIES.map(category => category.color);
 
   chartRefs.pie?.destroy();
   chartRefs.pie = new Chart(pieCanvas, {
@@ -167,7 +167,7 @@ const renderCharts = ({ pieCanvas, barCanvas }, catAgg, memberAgg, chartRefs) =>
         legend: { display: false },
         title:  { display: true, text: 'Amount Paid by Member', font: { size: 14, weight: 'bold' } }
       },
-      scales: { y: { beginAtZero: true, ticks: { callback: (v) => '₹' + v } } }
+      scales: { y: { beginAtZero: true, ticks: { callback: (value) => '₹' + value } } }
     }
   });
 };
